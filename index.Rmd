@@ -1,6 +1,6 @@
 ---
-title: "W. Jake Thompson's CV"
-author: W. Jake Thompson
+title: "Orçun Gümüş's CV"
+author: Orcun Gumus
 date: "`r Sys.Date()`"
 output:
   pagedown::html_resume:
@@ -38,10 +38,10 @@ source("parse-citations.R")
 # Aside
 
 ```{r logo, warning = FALSE, message = FALSE, error = FALSE, out.width="100%"}
-logo <- image_read("https://github.com/wjakethompson/wjakethompson.com/raw/main/static/img/logo/wjakethompson.png")
+logo <- image_read("https://www.verikafasi.org/data/pp.png")
 ht <- image_info(logo) %>% pull(height)
 wd <- image_info(logo) %>% pull(width)
-scale <- 2
+scale <- 1.5
 
 image_blank(width = wd * scale, height = ht, "hotpink") %>%
   image_composite(logo, offset = paste0("+", ((wd * scale) - wd) / 2, "+0")) %>%
@@ -50,44 +50,58 @@ image_blank(width = wd * scale, height = ht, "hotpink") %>%
 
 ## Contact {#contact}
 
--   <i class="fa fa-envelope"></i> [wjakethompson\@gmail.com](mailto:wjakethompson@gmail.com){.email}
--   <i class="fa fa-link"></i> [wjakethompson.com](https://wjakethompson.com)
--   <i class="fa fa-github"></i> [\@wjakethompson](https://github.com/wjakethompson)
--   <i class="fa fa-twitter"></i> [\@wjakethompson](https://twitter.com/wjakethompson)
+-   <i class="fa fa-envelope"></i> [orcungumus\@gmail.com](mailto:orcungumus@gmail.com){.email}
+-   <i class="fa fa-link"></i> [verikafasi.org](https://verikafasi.org)
+-   <i class="fa fa-linkedin"></i> [\@guemues](https://linkedin.com/in/guemues)
+-   <i class="fa fa-twitter"></i> [\@orcungumus](https://twitter.com/orcungumus)
 
 ## Skills {#skills}
 
 **Programming:**
 
+-   Python
 -   R
--   R Markdown
+-   SQL
 -   Stan
 
-**Psychometrics:**
+**Interests:**
 
--   Diagnostic Classification Models
--   Item Response Theory
--   Reliability
--   Differential Item Functioning
--   
-
-**Data Analysis:**
-
+-   Timeseries
+-   Optimization
+-   Graph theory
+-   Probabilistic programming
+-   Causal inference
+-   Reinforcement learning
 -   Bayesian statistics
 -   Generalized linear models
 -   Multilevel models
 
+
+**Software:**
+
+-   Docker
+-   Kubernetes
+-   Git
+-   Tableau
+
+**Languages:**
+
+-   Turkish (Native)
+-   English (IELTS 7)
+-   French (Intermediate)
+
+
 ## Disclaimer {#disclaimer}
 
-Made with the R package [**pagedown**](https://github.com/rstudio/pagedown).
+Template forked from [**wjakethompson**](https://github.com/wjakethompson/cv)
 
 Last updated on `r Sys.Date()`
 
 # Main
 
-## W. Jake Thompson {#title}
+## Orçun Gümüş {#title}
 
-### Psychometrician & R Developer
+### Data Science Consultant
 
 ## Education {data-icon="graduation-cap" data-concise="true"}
 
@@ -101,8 +115,9 @@ edu_data %>%
       starts_with('description'),
       names_to = 'description_num',
       values_to = 'description',
-      values_drop_na = TRUE
+      values_drop_na = FALSE
     ) %>% 
+    filter(!is.na(description) | (description_num == "description_1")) %>%
     group_by(id) %>% 
     mutate(
       descriptions = list(description)
@@ -117,6 +132,7 @@ edu_data %>%
       ),
       description_bullets = map_chr(descriptions, ~paste('-', ., collapse = '\n')),
     ) %>% 
+    mutate(description_bullets = ifelse(description_bullets == "- NA", "", description_bullets)) %>% 
     mutate_all(~ifelse(is.na(.), 'N/A', .)) %>% 
     glue_data(
       "### {title}",
@@ -142,8 +158,9 @@ emp_data %>%
   # mutate_at(vars(start, end), str_replace_all, pattern = "-[0-9]*$", "") %>%
   nest(data = -c(org, institution, loc)) %>%
   mutate(print_data = map(data, function(x) {
-    current <- filter(x, end == "present")
-    previous <- filter(x, end != "present")
+    
+    current <- filter(x, main == "TRUE")
+    previous <- filter(x, main != "TRUE")
     
     prev_positions <- x %>%
       select(title:end) %>%
@@ -170,9 +187,11 @@ emp_data %>%
       ungroup() %>%
       filter(description_num == "description_1") %>%
       mutate(full_start = min(x$start)) %>%
+      mutate(full_end = ifelse(end == "present", full_start, end)) %>%
       separate(full_start, c("start_year", "start_month"), convert = TRUE) %>%
-      mutate(timeline = glue("{end} - {month.name[start_month]} {start_year}"),
-             timeline = as.character(timeline),
+      separate(full_end, c("end_year", "end_month"), convert = TRUE) %>%
+      mutate(timeline = ifelse(end == "present", glue("{end} - {start_year}"), ifelse(end_year != start_year, glue("{end_year} - {start_year}"), glue("{start_year}")) )) %>%
+      mutate(timeline = as.character(timeline),
              description_bullets = map_chr(descriptions, ~paste("-", .x, collapse = "\n")),
              prev_pos = ifelse(nrow(previous) == 0, NA_character_,
                                paste("**Position History**\n\n",
@@ -190,7 +209,7 @@ emp_data %>%
     "\n\n",
     "{timeline}",
     "\n\n",
-    "{description_bullets}",
+    "{ifelse(description_bullets == '- FALSE', '', description_bullets)}",
     "\n\n",
     "{ifelse(is.na(prev_pos), '', prev_pos)}",
     "\n\n\n"
@@ -222,119 +241,28 @@ format_bib("bib/pubs.bib") %>%
   )
 ```
 
-## Conference Presentations {data-icon="users"}
+## Teaching Assistantships {data-icon="users"}
 
-```{r print-conf}
-format_bib("bib/conf.bib") %>%
-  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
-         author = map_chr(author, all_authors),
-         year = as.integer(year),
-         month = as.integer(month)) %>%
-  separate(eventdate, c("year", "month", "day"), extra = "drop", convert = TRUE) %>%
-  arrange(desc(year), desc(month), desc(day), author) %>%
-  group_by(year) %>%
-  mutate(count = 1:n()) %>%
-  ungroup() %>%
-  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year))) %>%
-  glue_data(
-    "### {title}",
-    "\n\n",
-    "{citation}",
-    "\n\n",
-    "N/A",
-    "\n\n",
-    "{year}",
-    "\n\n\n"
-  )
-```
+### Internet Analytics, Swiss Federal Institute of Technology in Lausanne
+A course about graph processing, recommender systems,clustering and PCA <i class="fa fa-link"></i> [EPFL Course Link](https://edu.epfl.ch/coursebook/en/internet-analytics-COM-308)
 
-## Technical Reports {data-icon="file-alt"}
+N/A
 
-```{r print-tech}
-format_bib("bib/tech.bib") %>%
-  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
-         author = map_chr(author, all_authors),
-         year = as.integer(year),
-         month = as.integer(month)) %>%
-  arrange(desc(year), desc(month), author) %>%
-  group_by(year) %>%
-  mutate(count = 1:n()) %>%
-  ungroup() %>%
-  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year))) %>%
-  glue_data(
-    "### {title}",
-    "\n\n",
-    "{citation}",
-    "\n\n",
-    "N/A",
-    "\n\n",
-    "{year}",
-    "\n\n\n"
-  )
-```
+2018
 
-## R Packages {data-icon="cube"}
 
-```{r print-rpkg}
-if (!file.exists("bib/rpkg.bib")) file.create("bib/rpkg.bib")
-# suppressWarnings(
-#   knitr::write_bib(x = c("dlmr", "rstandlm", "jayhawkdown", "ratlas"),
-#                    file = "bib/rpkg.bib", tweak = TRUE, width = 2000)
-# )
+### Large Scale Data Analysis, Bilkent University
+A courseabout Markov chains, PageRank, Map Reduce and collaborative filtering <i class="fa fa-link"></i> [Bilkent Course Link](http://www.cs.bilkent.edu.tr/~mustafa.ozdal/cs425/index_Fall2015.html)
 
-format_bib("bib/rpkg.bib") %>%
-  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
-         author = map_chr(author, all_authors, last_first = FALSE),
-         year = as.integer(year)) %>%
-  arrange(desc(year), author) %>%
-  group_by(year) %>%
-  mutate(count = 1:n()) %>%
-  ungroup() %>%
-  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year)),
-         title = map_chr(title, format_pkg_title)) %>%
-  glue_data(
-    "### {title}",
-    "\n\n",
-    "{citation}",
-    "\n\n",
-    "N/A",
-    "\n\n",
-    "{year}",
-    "\n\n\n"
-  )
-```
+N/A
 
-## Tutorials and Workshops {data-icon="chalkboard-teacher"}
+2016
 
-```{r print-work}
-format_bib("bib/work.bib") %>%
-  mutate(across(where(is.character), ~str_replace_all(.x, "\\{|\\}", "")),
-         author = map_chr(author, all_authors),
-         year = as.integer(year),
-         month = as.integer(month)) %>%
-  separate(eventdate, c("year", "month", "day"), extra = "drop", convert = TRUE) %>%
-  arrange(desc(year), desc(month), desc(day), author) %>%
-  group_by(year) %>%
-  mutate(count = 1:n()) %>%
-  ungroup() %>%
-  mutate(year = case_when(count != 1 ~ "N/A", TRUE ~ as.character(year))) %>%
-  glue_data(
-    "### {title}",
-    "\n\n",
-    "{citation}",
-    "\n\n",
-    "N/A",
-    "\n\n",
-    "{year}",
-    "\n\n\n"
-  )
-```
 
-## Awards {data-icon="award"}
+## Awards and service {data-icon="award"}
 
 ```{r print-awds}
 awd_data <- read_xlsx("cv-data.xlsx", sheet = "awards")
-gnt_data <- read_xlsx("cv-data.xlsx", sheet = "grants")
 
 awards <- awd_data %>%
   filter(display) %>%
@@ -345,14 +273,9 @@ awards <- awd_data %>%
   group_by(status) %>%
   summarize(bullets = paste(display_text, collapse = "\n"))
 
-grants <- gnt_data %>%
-  mutate(display_text = glue("- **{role}:** *{title}* ({start}--{end}). {sponsor}{ifelse(is.na(funding), '.', paste0('; $', prettyNum(funding, big.mark = ','), '.'))} {ifelse(is.na(pi), '', paste0('PI: ', pi, '.'))}")) %>%
-  arrange(desc(start)) %>%
-  group_by(status) %>%
-  summarize(bullets = paste(display_text, collapse = "\n"))
 
 
-bind_rows(grants, awards) %>%
+awards %>%
   mutate(status = factor(status,
                          levels = c("Currently Funded",
                                     "Under Review",
@@ -376,34 +299,21 @@ bind_rows(grants, awards) %>%
 
 ```
 
-## Service {data-icon="handshake"}
+### Transparency International 
 
-### Institutional Service
-
-- University of Kansas
-    - Research Technology working group (2021)
+Project owner for democratization city plans using recent technological developments
 
 N/A
 
-### Professional Affiliations
+2020
 
--   American Educational Research Association (2015--present)
-    -   Division D: Measurement and Research Methodology
-    -   SIG: Cognition and Assessment
--   American Statistical Association (2019--present)
-    -   Sections: Bayesian Statistical Science, Statistical Computing, Statistics in Sports
--   National Council on Measurement in Education (2015--present)
-    -   SIGIMIE: Diagnostic Measurement (2020--present)
-    -   Student Representative, Diversity and Testing Committee (2015)
+### Bilkent Eurogame Entertainment Club
+
+President of biggest Eurogame entertainment club in Turkey
 
 N/A
 
-### Reviewer
+2013 - 2017
 
--   Behaviormetrika (2019--present)
--   International Journal of Research in Education and Science (2019--present)
--   Journal of Open Source Software (2019--present)
--   National Council on Measurement in Education annual meeting (2019--present)
--   American Educational Research Association, Division H, Outstanding Publications (2019)
+- Increased organization budget by 300% through the nationwide events and establishing a network of sponsors
 
-N/A
