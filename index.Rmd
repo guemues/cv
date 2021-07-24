@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output:
   pagedown::html_resume:
     css: ['css/styles.css', 'resume']
-    self_contained: false
+    self_contained: true
 ---
 
 ```{r setup, include=FALSE}
@@ -66,14 +66,13 @@ image_blank(width = wd * scale, height = ht, "hotpink") %>%
 
 **Interests:**
 
+-   Bayesian statistics
+-   Additive linear models
 -   Timeseries
 -   Optimization
 -   Graph theory
--   Probabilistic programming
 -   Causal inference
 -   Reinforcement learning
--   Bayesian statistics
--   Generalized linear models
 -   Multilevel models
 
 
@@ -82,6 +81,7 @@ image_blank(width = wd * scale, height = ht, "hotpink") %>%
 -   Docker
 -   Kubernetes
 -   Git
+-   UNIX
 -   Tableau
 
 **Languages:**
@@ -93,15 +93,13 @@ image_blank(width = wd * scale, height = ht, "hotpink") %>%
 
 ## Disclaimer {#disclaimer}
 
-Template forked from [**wjakethompson**](https://github.com/wjakethompson/cv)
-
 Last updated on `r Sys.Date()`
 
 # Main
 
 ## Orçun Gümüş {#title}
 
-### Data Science Consultant
+### Data Scientist
 
 ## Education {data-icon="graduation-cap" data-concise="true"}
 
@@ -299,21 +297,18 @@ awards %>%
 
 ```
 
-### Transparency International 
+### Transparency International anti-corruption award recipient
 
-Project owner for democratization city plans using recent technological developments
+Project owner for democratization of city plans using recent technological developments in 3D building detection and modeling from Aerial LIDAR data
 
 N/A
 
 2020
 
-### Bilkent Eurogame Entertainment Club
-
-President of biggest Eurogame entertainment club in Turkey
+### President of Bilkent eurogame entertainment club
 
 N/A
 
-2013 - 2017
+N/A
 
-- Increased organization budget by 300% through the nationwide events and establishing a network of sponsors
-
+2017 - 2013
